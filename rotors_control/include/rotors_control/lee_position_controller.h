@@ -69,6 +69,11 @@ class LeePositionController {
   VehicleParameters vehicle_parameters_;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  ///////////////// additional member for research  ////////////////
+  void SetCtrlMode(int mode);
+  //////////////////////////////////////////////////////////////////
+
  private:
   bool initialized_params_;
   bool controller_active_;
@@ -83,6 +88,12 @@ class LeePositionController {
   void ComputeDesiredAngularAcc(const Eigen::Vector3d& acceleration,
                                 Eigen::Vector3d* angular_acceleration) const;
   void ComputeDesiredAcceleration(Eigen::Vector3d* acceleration) const;
+
+  ///////////////// additional member for research  ////////////////
+  int controller_mode_;
+  Eigen::Vector3d safe_position;
+  //////////////////////////////////////////////////////////////////
+
 };
 }
 

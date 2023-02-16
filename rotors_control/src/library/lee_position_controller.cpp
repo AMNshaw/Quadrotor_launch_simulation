@@ -24,7 +24,7 @@ namespace rotors_control {
 
 LeePositionController::LeePositionController()
     : initialized_params_(false),
-      controller_active_(false) {
+      controller_active_(true) {
   InitializeParameters();
 }
 
@@ -50,6 +50,10 @@ void LeePositionController::InitializeParameters() {
       * (controller_parameters_.allocation_matrix_
       * controller_parameters_.allocation_matrix_.transpose()).inverse() * I;
   initialized_params_ = true;
+
+  ///////////////// additional member for research  ////////////////
+  controller_mode_ = 0;
+  //////////////////////////////////////////////////////////////////
 }
 
 void LeePositionController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velocities) const {
@@ -105,9 +109,26 @@ void LeePositionController::ComputeDesiredAcceleration(Eigen::Vector3d* accelera
 
   Eigen::Vector3d e_3(Eigen::Vector3d::UnitZ());
 
-  *acceleration = (position_error.cwiseProduct(controller_parameters_.position_gain_)
+  if(controller_mode_ == 1)
+  {
+    *acceleration = -vehicle_parameters_.gravity_*e_3;
+  }
+
+  else if(controller_mode_ == 2)
+  {
+    Eigen::Vector3d safe_velocity = Eigen::Vector3d::Zero();
+    velocity_error = velocity_W - safe_velocity;
+    *acceleration = velocity_error.cwiseProduct(controller_parameters_.velocity_gain_) / vehicle_parameters_.mass_
+        - vehicle_parameters_.gravity_ * e_3 - command_trajectory_.acceleration_W;
+  }
+
+  else if(controller_mode_ == 3)
+  {
+    velocity_error = velocity_W - command_trajectory_.velocity_W;
+    *acceleration = (position_error.cwiseProduct(controller_parameters_.position_gain_)
       + velocity_error.cwiseProduct(controller_parameters_.velocity_gain_)) / vehicle_parameters_.mass_
       - vehicle_parameters_.gravity_ * e_3 - command_trajectory_.acceleration_W;
+  }
 }
 
 // Implementation from the T. Lee et al. paper
@@ -146,8 +167,17 @@ void LeePositionController::ComputeDesiredAngularAcc(const Eigen::Vector3d& acce
 
   Eigen::Vector3d angular_rate_error = odometry_.angular_velocity - R_des.transpose() * R * angular_rate_des;
 
-  *angular_acceleration = -1 * angle_error.cwiseProduct(normalized_attitude_gain_)
+  if(controller_mode_> 0)
+    *angular_acceleration = -1 * angle_error.cwiseProduct(normalized_attitude_gain_)
                            - angular_rate_error.cwiseProduct(normalized_angular_rate_gain_)
                            + odometry_.angular_velocity.cross(odometry_.angular_velocity); // we don't need the inertia matrix here
 }
+
+///////////////// additional member for research  ////////////////
+void LeePositionController::SetCtrlMode(int mode)
+{
+  controller_mode_= mode;
+  //std::cout << controller_mode_ << std::endl;
 }
+}
+//////////////////////////////////////////////////////////////////

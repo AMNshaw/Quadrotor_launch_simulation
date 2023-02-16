@@ -49,6 +49,9 @@ LeePositionControllerNode::LeePositionControllerNode(
 
   command_timer_ = nh_.createTimer(ros::Duration(0), &LeePositionControllerNode::TimedCommandCallback, this,
                                   true, false);
+  ///////////////// additional object for research  ////////////////
+  ctrl_mode_sub_ = nh_.subscribe("/iris/mode",1,  &LeePositionControllerNode::CtrlModeCallback, this);
+  //////////////////////////////////////////////////////////////////
 }
 
 LeePositionControllerNode::~LeePositionControllerNode() { }
@@ -192,6 +195,12 @@ void LeePositionControllerNode::OdometryCallback(const nav_msgs::OdometryConstPt
   motor_velocity_reference_pub_.publish(actuator_msg);
 }
 
+///////////////// additional object for research  ////////////////
+void LeePositionControllerNode::CtrlModeCallback(const std_msgs::Int32& mode_msg)
+{
+  lee_position_controller_.SetCtrlMode(mode_msg.data);
+}
+//////////////////////////////////////////////////////////////////
 }
 
 int main(int argc, char** argv) {

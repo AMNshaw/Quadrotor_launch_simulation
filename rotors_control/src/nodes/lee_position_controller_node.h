@@ -37,6 +37,11 @@
 #include "rotors_control/common.h"
 #include "rotors_control/lee_position_controller.h"
 
+///////////////// additional object for research  ////////////////
+#include <std_msgs/Int32.h>
+//////////////////////////////////////////////////////////////////
+
+
 namespace rotors_control {
 
 class LeePositionControllerNode {
@@ -66,6 +71,11 @@ class LeePositionControllerNode {
   mav_msgs::EigenTrajectoryPointDeque commands_;
   std::deque<ros::Duration> command_waiting_times_;
   ros::Timer command_timer_;
+
+  ///////////////// additional object for research  ////////////////
+  ros::Subscriber ctrl_mode_sub_;
+  void CtrlModeCallback(const std_msgs::Int32& mode_msg);
+  //////////////////////////////////////////////////////////////////
 
   void TimedCommandCallback(const ros::TimerEvent& e);
 
